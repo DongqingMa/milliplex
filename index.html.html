@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Milliplex 试剂盒智能推荐</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+/* ============================================================
+   MERCK BRAND IDENTITY — 12 色系 + 字体规范
+   Rich:     #5c2d91 #e4007c #7db928 #f5a800
+   Vibrant:  #1a5ea8 #00b0ca #e2001a #009b55
+   Sensitive:#7b5ea7 #e87fb4 #c8d400 #f0b400
+   ============================================================ */
+:root{
+  --rich-purple:#5c2d91;
+  --rich-pink:#e4007c;
+  --rich-green:#7db928;
+  --rich-yellow:#f5a800;
+  --vibrant-blue:#1a5ea8;
+  --vibrant-teal:#00b0ca;
+  --vibrant-red:#e2001a;
+  --vibrant-emerald:#009b55;
+  --sensitive-purple:#7b5ea7;
+  --sensitive-pink:#e87fb4;
+  --sensitive-lime:#c8d400;
+  --sensitive-amber:#f0b400;
+  --bg:#ffffff;
+  --surface:#f8f9fc;
+  --border:#e2e6ef;
+  --text:#1a1a2e;
+  --muted:#6b7280;
+  --primary:var(--vibrant-blue);
+  --accent:var(--rich-purple);
+  --radius:12px;
+  --shadow:0 2px 16px rgba(26,94,168,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC',Verdana,Arial,sans-serif;
+  font-size:15px;color:var(--text);background:var(--bg);
+  min-height:100vh;padding-bottom:64px;
+}
+
+/* ─── HEADER ─────────────────────────────────────────── */
+.header{
+  background:linear-gradient(135deg,var(--rich-purple) 0%,var(--vibrant-blue) 100%);
+  color:#fff;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:64px;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 12px rgba(92,45,145,0.25);
+}
+.header-logo{height:38px;width:auto;filter:brightness(0) invert(1);}
+.header-title{
+  font-size:16px;font-weight:700;letter-spacing:.5px;
+  opacity:.92;text-align:right;line-height:1.3;
+}
+.header-title span{display:block;font-size:12px;font-weight:400;opacity:.75;}
+
+/* ─── BREADCRUMB ──────────────────────────────────────── */
+.breadcrumb{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 24px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  font-size:13px;color:var(--muted);flex-wrap:wrap;
+}
+.breadcrumb-item{cursor:pointer;color:var(--primary);}
+.breadcrumb-item:hover{text-decoration:underline;}
+.breadcrumb-sep{color:var(--border);}
+.breadcrumb-current{color:var(--muted);font-weight:500;}
+
+/* ─── MAIN CONTAINER ──────────────────────────────────── */
+.container{max-width:960px;margin:0 auto;padding:28px 20px 20px;}
+
+/* ─── SECTION PAGES ───────────────────────────────────── */
+.page{display:none;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.page-title{
+  font-size:22px;font-weight:700;color:var(--accent);
+  margin-bottom:6px;
+}
+.page-hint{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+
+/* ─── SPECIES GRID ────────────────────────────────────── */
+.species-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+  gap:12px;margin-top:4px;
+}
+.species-card{
+  border:2px solid var(--border);border-radius:var(--radius);
+  padding:16px 12px;text-align:center;cursor:pointer;
+  background:#fff;transition:all .18s ease;
+  font-size:15px;font-weight:500;color:var(--text);
+  position:relative;overflow:hidden;
+}
+.species-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--rich-purple),var(--vibrant-teal));
+  opacity:0;transition:opacity .18s ease;
+}
+.species-card:hover::before{opacity:.07;}
+.species-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow);}
+.species-card .icon{font-size:26px;display:block;margin-bottom:6px;}
+.species-card .label{position:relative;z-index:1;}
+
+/* ─── TYPE SELECTOR ───────────────────────────────────── */
+.type-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  max-width:500px;margin:0 auto;
+}
+.type-card{
+  border:2px solid var(--border);border-radius:var(--radius);
+  padding:28px 20px;text-align:center;cursor:pointer;
+  background:#fff;transition:all .18s ease;
+}
+.type-card:hover{border-color:var(--vibrant-teal);box-shadow:var(--shadow);transform:translateY(-2px);}
+.type-card .type-icon{font-size:36px;display:block;margin-bottom:10px;}
+.type-card .type-name{font-size:17px;font-weight:700;color:var(--accent);}
+.type-card .type-desc{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5;}
+
+/* ─── FACTOR INPUT ────────────────────────────────────── */
+.input-section{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;margin-bottom:20px;
+}
+.input-label{font-weight:700;font-size:14px;margin-bottom:8px;color:var(--accent);display:flex;align-items:center;gap:6px;}
+.input-label .badge{
+  background:var(--vibrant-teal);color:#fff;
+  font-size:11px;padding:2px 8px;border-radius:20px;font-weight:400;
+}
+#factorInput{
+  width:100%;padding:14px;font-size:14px;
+  border:2px solid var(--border);border-radius:8px;
+  resize:vertical;min-height:110px;
+  font-family:'Noto Sans SC',Verdana,Arial,sans-serif;
+  line-height:1.6;transition:border-color .15s;
+  background:#fff;
+}
+#factorInput:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,94,168,.1);}
+.input-tips{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;
+}
+.tip-tag{
+  background:#fff;border:1px solid var(--border);
+  border-radius:20px;padding:3px 10px;
+  font-size:12px;color:var(--muted);cursor:pointer;
+  transition:all .15s;
+}
+.tip-tag:hover{border-color:var(--primary);color:var(--primary);}
+
+/* ─── RESULTS ─────────────────────────────────────────── */
+#results{margin-top:8px;}
+.result-summary{
+  background:linear-gradient(135deg,var(--rich-purple),var(--vibrant-blue));
+  color:#fff;border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:16px;
+  display:flex;flex-wrap:wrap;gap:16px;align-items:center;
+}
+.summary-stat{text-align:center;}
+.summary-stat .num{font-size:28px;font-weight:700;line-height:1;}
+.summary-stat .lbl{font-size:11px;opacity:.8;margin-top:2px;}
+.summary-divider{width:1px;height:40px;background:rgba(255,255,255,.25);}
+.summary-text{flex:1;font-size:13px;line-height:1.6;opacity:.95;}
+
+.kit-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 20px;
+  margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);
+  border-left:4px solid var(--vibrant-blue);
+  transition:box-shadow .15s;
+}
+.kit-card:hover{box-shadow:var(--shadow);}
+.kit-card.primary-card{border-left-color:var(--rich-purple);}
+.kit-header{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.kit-name{font-weight:700;font-size:15px;color:var(--text);flex:1;line-height:1.4;}
+.kit-sku{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:3px 10px;font-size:12px;
+  font-family:monospace;color:var(--vibrant-blue);font-weight:600;white-space:nowrap;
+}
+.kit-species-badge{
+  background:var(--rich-purple);color:#fff;
+  border-radius:20px;padding:3px 10px;font-size:11px;white-space:nowrap;
+}
+.annotation-badge{
+  background:var(--sensitive-amber);color:#6b4c00;
+  border-radius:20px;padding:3px 10px;font-size:11px;white-space:nowrap;
+}
+.kit-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.meta-item{font-size:12px;color:var(--muted);}
+.meta-item strong{color:var(--text);}
+
+.factors-section{margin-top:10px;}
+.factors-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.factor-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.factor-tag{
+  border-radius:4px;padding:2px 7px;font-size:12px;
+  background:#e8f1fb;color:var(--vibrant-blue);
+  border:1px solid rgba(26,94,168,.15);
+}
+.factor-tag.matched{
+  background:rgba(0,155,85,.12);color:var(--vibrant-emerald);
+  border-color:rgba(0,155,85,.25);font-weight:600;
+}
+.factor-tag.unmatched{
+  background:#fff5f5;color:var(--vibrant-red);
+  border-color:rgba(226,0,26,.15);
+}
+
+.uncovered-section{
+  background:#fff5f5;border:1px solid rgba(226,0,26,.2);
+  border-radius:var(--radius);padding:14px 18px;margin-top:12px;
+}
+.uncovered-title{font-size:13px;font-weight:700;color:var(--vibrant-red);margin-bottom:8px;}
+
+.no-results{
+  text-align:center;padding:40px 20px;color:var(--muted);
+}
+.no-results .no-icon{font-size:40px;margin-bottom:10px;}
+
+.status-bar{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--muted);margin-bottom:14px;
+  padding:10px 14px;background:var(--surface);
+  border-radius:8px;border:1px solid var(--border);
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--vibrant-teal);flex-shrink:0;
+  animation:pulse 1.5s ease infinite;
+}
+.status-dot.idle{background:var(--border);animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ─── BACK BTN ────────────────────────────────────────── */
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--primary);cursor:pointer;
+  margin-bottom:18px;padding:6px 0;
+  background:none;border:none;font-family:inherit;
+}
+.back-btn:hover{text-decoration:underline;}
+
+/* ─── FOOTER ──────────────────────────────────────────── */
+.footer{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(26,30,46,.96);color:rgba(255,255,255,.7);
+  font-size:11px;text-align:center;padding:9px 20px;
+  backdrop-filter:blur(8px);z-index:300;line-height:1.5;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+@media(max-width:600px){
+  .container{padding:16px 14px;}
+  .species-grid{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .species-card{padding:12px 8px;font-size:13px;}
+  .species-card .icon{font-size:20px;margin-bottom:4px;}
+  .type-grid{grid-template-columns:1fr;max-width:100%;}
+  .header-title{font-size:14px;}
+  .result-summary{padding:12px 14px;}
+  .summary-stat .num{font-size:22px;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <img class="header-logo" src="data:image/png;base64,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" alt="Merck"/>
+  <div class="header-title">
+    Milliplex<sup>®</sup> 试剂盒智能推荐
+    <span>Kit Selection Assistant · Demo</span>
+  </div>
+</header>
+
+<!-- BREADCRUMB -->
+<nav class="breadcrumb" id="breadcrumb" aria-label="当前步骤">
+  <span class="breadcrumb-current">① 选择种属</span>
+</nav>
+
+<!-- MAIN -->
+<main class="container">
+
+  <!-- PAGE 1: SPECIES -->
+  <div class="page active" id="page-species">
+    <div class="page-title">选择研究种属</div>
+    <div class="page-hint">点击种属后自动进入下一步，无需确认按钮</div>
+    <div class="species-grid" id="speciesGrid"></div>
+  </div>
+
+  <!-- PAGE 2: TYPE (Human only) -->
+  <div class="page" id="page-type">
+    <button class="back-btn" onclick="goBack('species')">← 返回种属选择</button>
+    <div class="page-title">选择试剂盒类型</div>
+    <div class="page-hint">人源 Milliplex 试剂盒分为筛查型与验证型，请选择：</div>
+    <div class="type-grid">
+      <div class="type-card" onclick="selectType('screening')">
+        <span class="type-icon">🔬</span>
+        <div class="type-name">筛查型</div>
+        <div class="type-desc">PLEXpedition 大 Panel<br/>广谱因子覆盖，用于初步探索</div>
+      </div>
+      <div class="type-card" onclick="selectType('validation')">
+        <span class="type-icon">✅</span>
+        <div class="type-name">验证型</div>
+        <div class="type-desc">精确 Panel 组合<br/>针对特定通路/疾病方向</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: FACTOR INPUT + RESULTS -->
+  <div class="page" id="page-factors">
+    <button class="back-btn" id="backFromFactors" onclick="backFromFactors()">← 返回</button>
+    <div class="page-title" id="factorPageTitle">输入检测因子</div>
+    <div class="input-section">
+      <div class="input-label">
+        <span>批量输入因子</span>
+        <span class="badge">支持换行 / 逗号 / 空格分隔</span>
+      </div>
+      <textarea id="factorInput"
+        placeholder="在此粘贴或输入因子名称，例如：&#10;IL-6, TNFα, IFNγ&#10;MCP-1 IL-2 Fractalkine&#10;CX3CL1 / VEGF-A&#10;&#10;输入后实时自动检索，无需点击确认"></textarea>
+      <div class="input-tips" id="exampleTips"></div>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot idle" id="statusDot"></div>
+      <span id="statusText">等待输入因子…</span>
+    </div>
+    <div id="results"></div>
+  </div>
+
+</main>
+
+<!-- FOOTER DISCLAIMER -->
+<footer class="footer">
+  ⚠️ 本工具为个人兴趣 Demo，非官方产品，仅供学习参考，不用于商业用途，不承担任何法律责任。
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// MILLIPLEX DATA (inlined)
+// ═══════════════════════════════════════════════════════════════
+const MILLIPLEX_DB = {"datasets":[{"species":"Human","species_zh":"人源","type":"screening","name":"MILLIPLEX PLEXpedition 筛查型检测试剂盒 人源","sku":"HPLX1-115SP","factors":["EGF","IL-2","MCP-1","ACTH","M-CSF","Amylin (Active)","MCP-2","FGF-2","IL-4","MIG","BDNF","MCP-3","BCA-1","MCP-4","Fractalkine","IL-5","MIP-1α","C-Peptide","MDC","BNP","MIP-1β","G-CSF","IL-6","MIP-1β","Eotaxin","MIP-3α","CK-MB","MIP-3β","Ghrelin (Active)","IL-7","OPN","FABP4","MMP-1","GCP-2","MMP-3","IL-8","PDGF-AA","FLT3 Ligand","MMP-2","DKK1","MMP-10","GIP","IL-10","PDGF-AB/BB","GLP-1 Total","MMP-7","ENA-78","MMP-12","Glucagon","IL-12 (p40)","Perforin","Granzyme A","MMP-9","Eotaxin-2","Myostatin","GM-CSF","IL-12 (p70)","RANTES","I-TAC","OPG","Eotaxin-3","NGF","Granzyme B","IL-13","sCD40L","IL-3","PIGF","Erythropoietin (EPO)","NTproBNP","GROα","IL-15","SCF","IL-9","PP","FABP3","Osteocalcin","HGF","IL-17A","SFAS","IL-17F","PYY","FGF-21","Osteonectin","IFNα2","IL-18","SFASL","IL-21","TARC","FGF-23","SDF-1","IFNγ","IL-22","TGFα","IL-33","TNFβ","HB-EGF","TPO","IL-10","IL-23","TNFα","Insulin","Troponin I","I-309","TSLP","IL-1β","IP-10","TRAIL","IL-11","VEGF-C","IL-1Ra","Leptin","VEGF-A","LIF","VEGF-D"],"annotation":"注意适用的仪器型号."},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine/Chemokine/Growth Factor Panel B","sku":"HCYTB-60K","factors":["6Ckine/CCL21","APRIL","BAFF/Blys","BCA-1/CXCL13","CCL28","sCD137/4-1BB/TNFRSF9","CTACK/CCL27","CXCL6/GCP-2","CXCL16","ENA-78/CXCL5","Eotaxin-2/CCL24/MPIF-2","Eotaxin-3/CCL26","sFAS/TNFRSF6","sFASL","Granzyme A","Granzyme B","HMGB1","I-309/CCL1","IL-11","IL-16","IL-20","IL-21","IL-23","IL-24","IL-28A/IFNλ2","IL-29/IFNλ1","IL-31","IL-33/NF-HEV (mature)","IL-34","IL-35","IFNβ","IFNω","I-TAC/CXCL11","LIF","Lymphotactin/XCL1","MCP-2/CCL8","MCP-4/CCL13","MIP-1δ/MIP-5/CCL15","MIP-3α/CCL20","MIP-3β/CCL19","MPIF-1/CCL23","Perforin","SCF","SDF-1/CXCL12","TARC/CCL17","TPO","TRAIL/TNFSF10","TSLP"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine/Chemokine/Growth Factor Panel A","sku":"HCYTA-60K","factors":["sCD40L","EGF","Eotaxin/CCL11","FGF-2/FGF-basic","Flt3 Ligand","Fractalkine/CX3CL1","G-CSF","GM-CSF","GROα","IFNα2","IFNγ","IL-1α","IL-1β","IL-1RA","IL-2","IL-3","IL-4","IL-5","IL-6","IL-7","IL-8/CXCL8","IL-9","IL-10","IL-12 (p40)","IL-12 (p70)","IL-13","IL-15","IL-17A/CTLA8","IL-17E/IL-25","IL-17F","IL-18","IL-22","IL-27","IP-10/CXCL10","MCP-1/CCL2","MCP-3/CCL7","M-CSF","MDC/CCL22","MIG/CXCL9","MIP-1α/CCL3","MIP-1β/CCL4","PDGF-AA","PDGF-AB/BB","RANTES/CCL5","TGFα","TNFα","TNFβ/Lymphotoxin-α (LTA)","VEGF-A"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human High Sensitivity T Cell","sku":"STCMAG-28SK","factors":["Fractalkine/CX3CL1","IL-12 (p70)","GM-CSF","IL-13","IFNγ","IL-17A/CTLA8","IL-1β","IL-21","IL-2","IL-23","IL-4","I-TAC/CXCL11","IL-5","MIP-1α/CCL3","IL-6","MIP-1β/CCL4","IL-7","MIP-3α/CCL20","IL-8/CXCL8","TNFα","IL-10"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"384-Well Human High Sensitivity T Cell","sku":"HSTC384-28K","factors":["Fractalkine/CX3CL1","GM-CSF","IFNγ","IL-1β","IL-2","IL-4","IL-5","IL-6","IL-7","IL-8/CXCL8","IL-10","IL-12 (p70)","IL-13","IL-17A / CTLA8","IL-21","IL-23","I-TAC / CXCL11","MIP-1α / CCL3","MIP-1β/CCL4","MIP-3α/CCL20","TNFα"],"annotation":"384孔板"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Th17","sku":"HTH17MAG-14K","factors":["GM-CSF","IFNγ","IL-1β","IL-2","IL-4","IL-5","IL-6","IL-9","IL-10","IL-12 (p70)","IL-13","IL-15","IL-17A / CTLA8","IL-17E / IL-25","IL-17F","IL-21","IL-22","IL-23","IL-27","IL-28A / IFNλ2","IL-31","IL-33 / NF-HEV (mature)","MIP-3α / CCL20","TNFα","TNFβ/Lymphotoxin-α (LTA)"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human CD8+ T Cell","sku":"HCD8SF-15K","factors":["sCD137/4-1BB/TNFRSF9","IL-4","SFAS/TNFRSF6","IL-5","sFasL","IL-6","GM-CSF","IL-10","Granzyme A","IL-13","Granzyme B","MIP-1α/CCL3","IFNγ","MIP-1β/CCL4","IL-2","Perforin","TNFα"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Interferon","sku":"HIFN-130K","factors":["IFNα2","IFNε","IFNβ","IFNω","IFNγ","IL-28A/IFNλ2","IFNγ Receptor 1 (IFNGR1)","IL-28B/IFNλ3","IL-29/IFNλ1"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Soluble Cytokine Receptor","sku":"HSCRMAG-32K","factors":["sCD30","sIL-6R","sEGFR/sHER1/ErbB1","sRAGE","sGP130","sTNF RI","sIL-1RI","sTNF RII","sIL-1RII","sVEGFR1/sFlt-1","sIL-2Rα","sVEGFR2/sKDR/sFlk-1","sIL-4R","sVEGFR3/sFlt-4"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine/Chemokine Panel III","sku":"HCYP3MAG-63K","factors":["HCC-1/CCL14","M-CSF","IL-11","MIG/CXCL9","IL-29/IFNα1","MIP-3α/CCL20","I-TAC/CXCL11","MIP-3β/CCL19","CXCL6/GCP-2","NAP-2/CXCL7","Lymphotactin/XCL1"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine/Chemokine Panel IV","sku":"HCYP4MAG-64K","factors":["BAFF/Blys","IL-28B/IFNλ3","BRAK/CXCL14","IL-32α","CCL28","IL-34","CXCL16","IL-35","HCC-4/CCL16","IL-36β/IL-1F8","HMGB1","IL-37/IL-1F7","IFNβ","IL-38/IL-1F10","IL-14/α-Taxilin","MIP-4/PARC/CCL18","IL-19","MPIF/CCL23","IL-24","YKL40/CHI3L1"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human IL-18 Singleplex","sku":"HIL18MAG-66K","factors":["IL-18"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Complement Expanded Panel 1","sku":"HCMPEX1-19K","factors":["Adipsin/Factor D","C9","C2","Factor I","C4b","Mannose-Binding Lectin (MBL)","Properdin","C5","C5a"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Complement Panel 2","sku":"HCMP2MAG-19K","factors":["C1q","C3","C3b","C4","Factor B","Factor H"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Complement C5b-9 Singleplex","sku":"HC5B9-140K","factors":["C5b-9"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human MMP Panel 1","sku":"HMMP1MAG-55K","factors":["MMP-3","MMP-13","MMP-12"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human MMP Panel 2","sku":"HMMP2MAG-55K","factors":["MMP-1","MMP-9","MMP-2","MMP-10","MMP-7"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human TIMP Panel 1（Serum/Plasma samples)","sku":"HTMP1MAG-54K","factors":["TIMP-1","TIMP-2"],"annotation":"血清/血浆专用"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human TIMP Panel 2（Cell culture samples）","sku":"HTMP2MAG-54K","factors":["TIMP-1","TIMP-3","TIMP-2","TIMP-4"],"annotation":"细胞培养样本专用"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Fibrosis Panel 1","sku":"HFIB1-100K","factors":["COMP","Uteroglobin","IL-18BPa"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Autoimmune Autoantibody IgG","sku":"HAIAB-10K","factors":["β2-Glycoprotein","PM/Scl 100","C1q","Proteinase 3","CENP-A","Ribosomal P","CENP-B","RNP","Jo-1","RNP/Sm","Ku","Scl-70","Mi-2","Sm","Myeloperoxidase (MPO)","SSA/Ro52","PCNA","SSA/Ro60","PL-12 (Alanyl-tRNA Synthetase)","SSB/La"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine Autoantibody Expanded IgG","sku":"HCYTABG-17K","factors":["BAFF/Blys","IL-8/CXCL8","G-CSF","IL-10","GM-CSF","IL-12 (p40)","IFNα2","IL-15","IFNβ","IL-17A/CTLA8","IFNγ","IL-17F","IL-10","IL-18","IL-2","IL-22","IL-3","Osteopontin","IL-4","PF4","IL-6","TNFα"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine Autoantibody Expanded IgA","sku":"HCYTABA-17K","factors":["BAFF/Blys","IL-8/CXCL8","G-CSF","IL-10","GM-CSF","IL-12 (p40)","IFNα2","IL-15","IFNβ","IL-17A/CTLA8","IFNγ","IL-17F","IL-10","IL-18","IL-2","IL-22","IL-3","Osteopontin","IL-4","PF4","IL-6","TNFα"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cytokine Autoantibody Expanded IgM","sku":"HCYTABM-17K","factors":["BAFF/Blys","IL-8/CXCL8","G-CSF","IL-10","GM-CSF","IL-12 (p40)","IFNα2","IL-15","IFNβ","IL-17A/CTLA8","IFNγ","IL-17F","IL-10","IL-18","IL-2","IL-22","IL-3","Osteopontin","IL-4","PF4","IL-6","TNFα"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Sepsis Panel 1","sku":"HSP1MAG-63K","factors":["sFAS/TNFRSF6","MIF","sFasL","PAI-1 (total)","sICAM-1","sVCAM-1"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Sepsis Panel 2","sku":"HSP2MAG-63K","factors":["Granzyme B","MIP-1α/CCL3","HSP70","MIP-1β/CCL4","IL-1α","MMP-8","IL-8/CXCL8"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Sepsis Panel 3","sku":"HSP3MAG-63K","factors":["Lactotransferrin (LTF)","Resistin","Neutrophil Elastase-2 (ELA2)","NGAL/Lipocalin-2","Thrombospondin-1 (TSP-1)"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Immunoglobulin Isotyping","sku":"HGAMMAG-301K","factors":["IgA","IgG3","IgG1","IgG2","IgM","IgG4"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human IgE - Singleplex","sku":"HGAMMAG-303E","factors":["IgE"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"AAV Serotyping Panel IgG","sku":"AAVSERG-230K","factors":["AAV2","AAV1","AAV6","AAV8","AAV5","AAV9"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"SARS-CoV-2 Antigen Panel 1 IgA","sku":"HC19SERA1-85K","factors":["SARS-CoV-2 N","SARS-CoV-2 RBD","SARS-CoV-2 Spike S1","SARS-CoV-2 Spike S2"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"SARS-CoV-2 Antigen Panel 1 IgG","sku":"HC19SERG1-85K","factors":["SARS-CoV-2 N","SARS-CoV-2 RBD","SARS-CoV-2 Spike S1","SARS-CoV-2 Spike S2"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"SARS-CoV-2 Antigen Panel 1 IgM","sku":"HC19SERM1-85K","factors":["SARS-CoV-2 N","SARS-CoV-2 RBD","SARS-CoV-2 Spike S1","SARS-CoV-2 Spike S2"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Adipokine Panel 1（Serum/Plasma samples）","sku":"HADK1MAG-61K","factors":["Adiponectin","Adipsin/Factor D","Resistin","PAI-1 (total)","NGAL/Lipocalin-2"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Adipokine Panel 2（Serum/Plasma samples）","sku":"HADK2MAG-61K","factors":["IL-1β","Leptin","IL-6","MCP-1/CCL2","IL-8/CXCL8","NGF","Insulin","TNFα"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Adipocyte（Cell culture samples）","sku":"HADCYMAG-61K","factors":["Adiponectin","MCP-1/CCL2","HGF","NGF","IL-1β","PAI-1 (total)","IL-6","Resistin","IL-8/CXCL8","TNFα","Leptin"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Metabolic Hormone V3","sku":"HMH3-34K","factors":["Amylin (active)","Insulin","Amylin (total)","Leptin","C-Peptide","MCP-1/CCL2","Ghrelin (active)","GIP (total)","GLP-1 (active)","GLP-1 (total)","Glucagon","IL-6","Pancreatic Polypeptide(PP)","PYY(total)","Secretin","TNFα"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Myokine","sku":"HMYOMAG-56K","factors":["Apelin","BDNF","Erythropoietin (EPO)","FABP3","IL-15","Irisin","LIF","Myostatin/GDF8","FGF-21","Fractalkine/CX3CL1","Oncostatin-M (OSM)","Osteocrin (OSTN)/Musclin","FSTL1","IL-6","Osteonectin/SPARC"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Aging Panel 1","sku":"HAGE1MAG-20K","factors":["CTACK/CCL27","IL-6","FGF-21","GDF-11","IL-10","IL-18","GDF15","GnRH","Jag1","Leptin"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Liver Protein","sku":"HLPPMAG-57K","factors":["α-Fetoprotein (AFP)","ANGPTL3","FGF-19","FGF-21","ANGPTL4","FGF-23","ANGPTL6","HGF","FABP1"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human IGF Binding Protein","sku":"HIGFBMAG-53K","factors":["IGFBP1","IGFBP2","IGFBP5","IGFBP6","IGFBP3","IGFBP7","IGFBP4"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human IGF","sku":"HIGFMAG-52K","factors":["IGF-1","IGF-2"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Pituitary Panel 1","sku":"HPTP1MAG-66K","factors":["ACTH","FSH","Agouti-Related Protein(AgRP)","GH","LH","TSH","CNTF"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human CVD Panel 1","sku":"HCVD1MAG-67K","factors":["BNP","LIGHT","CK-MB","CXCL6/GCP-2","NT proBNP","Oncostatin-M (OSM)","CXCL16","Endocan-1 (ESM-1)","FABP3","FABP4","Placental Growth Factor(PIGF)","Troponin I (TnI)"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human CVD Panel 2","sku":"HCVD2MAG-67K","factors":["ADAMTS13","Myoglobin","D-dimers","GDF15","NGAL/Lipocalin-2","sP-Selectin","sICAM-1","Serum Amyloid A","Myeloperoxidase (MPO)","sVCAM-1"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human CVD Panel 3 (Acute Phase)","sku":"HCVD3MAG-67K","factors":["α-1-Acid Glycoprotein (AGP)","Haptoglobin","α-2-Macroglobulin","sL-Selectin","Platelet Factor 4(PF4)/CXCL4","Adipsin/Factor D","CRP","Serum Amyloid P (SAP)","Fetuin A","Fibrinogen"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human CVD Panel 4","sku":"HCVD4MAG-67K","factors":["sCD31/SPECAM-1","Thrombomodulin","sE-Selectin","Tissue Factor (TF)","Follistatin (FST)","Troponin T (TnT)","Pentraxin-3 (PTX3)"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human CVD Panel 6","sku":"HCVD6MAG-67K","factors":["sCD14","MCAM/MUC18","DPP4","Progranulin (pGRN)","Endostatin","ucMGP","LRG1"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Apolipoprotein","sku":"APOMAG-62K","factors":["Apo AI","Apo CII","Apo AII","Apo CIII","Apo B","Apo E"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Bone","sku":"HBNMAG-51K","factors":["ACTH","Osteocalcin (OC)","DKK1","Osteopontin (OPN)","FGF-23","Osteoprotegerin (OPG)","IL-1β","PTH","IL-6","Sclerostin (SOST)","Insulin","TNFα","Leptin"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human RANKL - Singleplex","sku":"HRNKLMAG-51K-01","factors":["RANKL"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Immuno-Oncology Checkpoint Protein Panel 1","sku":"HCKP1-11K","factors":["BTLA","HVEM","CD27","ICOS","CD28","LAG-3","CD40","PD-1","CD80/B7-1","PD-L1","CD86/B7-2","PD-L2","CTLA-4/CD152","TIM-3","GITR","TLR-2","GITRL"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Immuno-Oncology Checkpoint Protein Panel 2","sku":"HCKP2-11K","factors":["4-1BBL/TNFF9","FGL1/Hepassocin","5'-NT/CD73","Galentin-1","APRIL","Galentin-3","Arginase-1","Granulysin","B7-H2/ICOSL","Granzyme B","B7-H3/CD276","IDO1","B7-H4/VTCN1","MICA","B7-H5/VISTA","MICB","B7-H6","Nectin-2","BAFF/BLYS","Nectin-4","CD25/IL-2Rα","OX40/CD134","CD30/TNFRSF8","Perforin","CD40L","PVR/CD155","CD137/4-1BB","Siglec-7","CD226/DNAM-1","Siglec-9","E-Cadherin"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cancer Autoantibody IgG","sku":"HCABMAG-13K","factors":["CCNB1/Cyclin B1","IGF2BP2/IMP2","CTAG1B/NY-ESO-1","IGF2BP3/IMP3","ENO1","Mucin-1 (MUC1)","Galectin-1 (GAL1)","P16-INK4a","Galectin-3 (GAL3)","p53","HER2/ErbB2","SOX2","HIF-1α","Survivin/BIRC5","HSP60"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Exosome Characterization","sku":"HEXSM-170K","factors":["Argonaute-2 (Ago2)","Flotilin-1 (FLOT-1)","Calreticulin (CALR)","GAPDH","CD9","Syntenin-1 (Syn-1)","CD63","TSG101","CD81"],"annotation":"Ago2磁珠固定包含"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Circulating Cancer Biomarker Panel 1","sku":"HCCBP1MAG-58K","factors":["α-Fetoprotein (AFP)","IL-8/CXCL8","CA125","Leptin","CA15-3","MIF","CA19-9","Osteopontin (OPN)","CEA","Prolactin","CYFRA21-1","PSA (free)","sFAS/TNFRSF6","PSA (total)","sFasL","SCF","FGF-2/FGF-basic","TGFα","HCGβ","TNFα","HE4","TRAIL/TNFSF10","HGF","VEGF-A","IL-6"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Circulating Cancer Biomarker Panel 3","sku":"HCCBP3MAG-58K","factors":["Cathepsin D","Melanoma Inhibitory Activity (MIA)","Ferritin","Myeloperoxidase (MPO)","Fibroblast Activation Protein (FAP)","Sex Hormone Binding Globulin (SHBG)","Galentin-3","IGFBP3"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Circulating Cancer Biomarker Panel 4","sku":"HCCB4MAG-58K","factors":["ALDH1A1","Kallikrein-6","Carbonic Anhydrase 9 (CA9)","Mesothelin","Midkine","CD44","NCAML1/L1CAM/CD171","EpCAM","Transglutaminase 2 (TGM2)","Hepsin"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Cancer/Metastasis Biomarker Panel1","sku":"HCMBMAG-22K","factors":["DKK1","Osteoprotegerin (OPG)","GDF15","Periostin","Neuron-specific Enolase (NSE)","TRAP5","Osteonectin/SPARC","TWEAK","YKL40/CHI3L1"],"annotation":"BSL2"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Angiogenesis/Growth Factor Panel 1","sku":"HAGP1MAG-12K","factors":["Angiopoletin-2","HB-EGF","BMP-9","HGF","EGF","IL-8/CXCL8","Endoglin","Leptin","Endothelin-1","Placental Growth Factor (PIGF)","FGF-1/FGF-acidic","VEGF-A","FGF-2/FGF-basic","VEGF-C","Follistatin (FST)","VEGF-D","G-CSF"],"annotation":"BSL2、SF"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Angiogenesis Panel 2","sku":"HANG2MAG-12K","factors":["Angiostatin/Kringle","sIL-6Rα","sAXL","sNeuropilin-1 (sNRP-1)","sCD31/sPECAM-1","Osteopontin (OPN)","sc-Kit/sStem Cell Factor Receptor (SCFR)","PDGF-AB/BB","sE-Selectin","Thrombospondin-2 (TSP-2)","sEGFR/sHER1/sErbB1","sTIE-2","sHER2/sEGFR2/sErbB2","suPAR","sHER3/sEGFR3/sErbB3","sVEGFR1/sFlt-1","sHGFR/sc-Met","sVEGFR2/sKDR/sFlk-1","sVEGFR3/sFlt-4"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Amyloid Beta and Tau（CSF samples）","sku":"HNABTMAG-68K","factors":["Amyloid beta 1-40","pTau (Thr181)","Amyloid beta 1-42","Tau (total)"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neuroscience Panel 1（CSF samples）","sku":"HNS1MAG-95K","factors":["α-Synuclein","PARK5/UCHL1","Glial Fibrillary Acidic Protein (GFAP)","PARK7/DJ1","Transglutaminase 2 (TGM2)","Neuron-specific Enolase (NSE)"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neuroscience Panel 2","sku":"HNS2MAG-95K","factors":["Angiogenin (ANG)","Ferritin","ApoE4","Neurogranin (NRGN)","FABP3","TREM2"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neurodegenerative Autoantibody IgG","sku":"HNDGAB-220K","factors":["α-synuclein","DRD2","Aβ42","ELAVL4 (HuD)","AChR","GFAP","AGNA (SOX1)","MBP","Ago2 (Su)","mGluR1","AMPA-R","MOG","Amphiphysin","NF-L","ANNA2 (RI)/NOVA1","NMDAR1","AQP4","NRXN3","C1q","PCA1 (Yo)/CDR2","CRMP5","PNMA1 (Ma1)","CRYAB","tTau","DPPX"],"annotation":"QUALITATIVE KIT"},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neurodegenerative Disease Panel 1","sku":"HNDG1MAG-36K","factors":["α-2-Macroglobulin","Apo AI","Apo CIII","Apo E","Complement Factor C3","Complement Factor H (CFH)"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neurodegenerative Disease Panel 2","sku":"HNDG2MAG-36K","factors":["α-1-Antitrypsin (A1AT)","C4","CRP","MIP-4/PARC/CCL18","PEDF","Serum Amyloid P (SAP)"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neurodegenerative Disease Panel 3","sku":"HNDG3MAG-36K","factors":["BDNF","PAI-1 (total)","Cathepsin D","PDGF-AA","sICAM-1","PDGF-AB/BB","Myeloperoxidase (MPO)","RANTES/CCL5","sVCAM-1","SNCAM"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neurodegenerative Disease Panel 4 (CSF samples)","sku":"HNDG4MAG-36K","factors":["Amyloid beta 1-40","sRAGE","Amyloid beta 1-42","S100B","GDNF"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neurological Disorders Panel 3","sku":"HND3MAG-39K","factors":["Angiotensin (AGT)","Osteopontin (OPN)","Soluble Superoxide Dismutase 1 (sSOD1)","Contactin-1","Soluble Superoxide Dismutase 2 (sSOD2)","Fetuin A","Kallikrein-6"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Neuropeptide","sku":"HNPMAG-35K","factors":["α-MSH","Oxytocin","β-Endorphin","Substance P","Neurotensin"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Circadian Stress","sku":"HNCSMAG-35K","factors":["Cortisol","Melatonin"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Kidney Injury Panel 1（Urine samples）","sku":"HKI1MAG-99K","factors":["Calbindin","Collagen IV","GSTα","IP-10/CXCL10","KIM-1","Renin","TFF-3","TIMP-1"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Kidney Injury Panel 2（Urine samples）","sku":"HKI2MAG-99K","factors":["α-1-Microglobulin","EGF","Albumin","NGAL/Lipocalin-2","Clusterin","Osteopontin (OPN)","Cystatin C"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Kidney Injury Panel 4（Serum/Plasma samples）","sku":"HKI4MAG-99K","factors":["EGF","Osteopontin (OPN)","FABP1","PTH","IP-10/CXCL10","Renin","KIM-1"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Kidney Injury Panel 5（Serum/Plasma samples）","sku":"HKI5MAG-99K","factors":["α-1-Microglobulin","Osteoactivin","Collagen IV","TIMP-1","NGAL/Lipocalin-2","Uromodulin"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Kidney Injury Panel 6（Serum/Plasma samples）","sku":"HKI6MAG-99K","factors":["β-2-Microglobulin","Cystatin C","Clusterin","RBP4"],"annotation":""},{"species":"Human","species_zh":"人源","type":"validation","name":"Human Liver Injury","sku":"HLINJMAG-75K","factors":["5'NT/CD73","MDH1","ARG1","SDH","GSTα"],"annotation":""},{"species":"NHP","species_zh":"非人灵长类","type":"validation","name":"Non-Human Primate Cytokine/Chemokine/Growth Factor Panel A","sku":"PRCYTA-40K","factors":["BCA-1/CXCL13","IL-15","sCD137/4-1BB/TNFRSF9","IL-16","sCD40L","IL-17A/CTLA8","Eotaxin/CCL11","IL-17E/IL-25","sFASL","IL-18","FGF-2/FGF-basic","IL-21","Fractalkine/CX3CL1","IL-22","G-CSF","IL-23","GM-CSF","IL-28A/IFNλ2","Granzyme A","Granzyme B","IL-31","IFNα2","IL-33/NF-HEV (mature)","IFNγ","IP-10/CXCL10","IL-10","I-TAC/CXCL11","IL-1β","MCP-1/CCL2","IL-1RA","MIG/CXCL9","IL-2","MIP-1α/CCL3","IL-4","MIP-1β/CCL4","IL-5","MIP-3α/CCL20","IL-6","Perforin","IL-7","RANTES/CCL5","IL-8/CXCL8","TGFα","IL-10","TNFα","IL-12 (p70)","TNFβ/LTA","VEGF-A"],"annotation":"BSL2、SF"},{"species":"NHP","species_zh":"非人灵长类","type":"validation","name":"Non-Human Primate Metabolic Hormone","sku":"NHPMHMAG-45K","factors":["Amylin (active)","Insulin","C-Peptide","Leptin","Ghrelin (active)","MCP-1/CCL2","GIP (total)","GLP-1 (active)","Pancreatic Polypeptide (PP)","Glucagon","PYY (total)","IL-6"],"annotation":"BSL2、SF"},{"species":"NHP","species_zh":"非人灵长类","type":"validation","name":"Non-Human Primate Pituitary Panel 1","sku":"NHPPT1MG-46K","factors":["ACTH","FSH","Agouti-Related Protein(AgRP)","GH","LH","TSH","CNTF"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Cytokine/Chemokine/Growth Factor Expanded Panel 1","sku":"MCYT1-190K","factors":["BAFF","IL-12p40","Betacellulin","IL-12p70","CCL25/TECK","IL-13","sCD137/4-1BB/TNFRSF9","IL-15","CHI3L1","IL-16","CXCL16","IL-17A/CTLA8","EGF","IL-17F","Eotaxin/CCL11","IL-18","Erythropoietin (EPO)","IL-20","Exodus-2/CCL21/6Ckine","IL-22","IL-28B/IFNλ3","sFas/TNFRSF6","IL-31","sFasL","IL-33","FGF-2","IP-10/CXCL10","FLT3L","KC/GRO/CINC-1/CXCL1","Fractalkine/CX3CL1","LIFC","G-CSF","LIX","GDF-15","MDC/CCL22","GM-CSF","MCP-1/CCL2","Granzyme B","MCP-2","sICAM-1","MCP-3","IFNα","MCP-5/CCL12","IFNβ","M-CSF","IFNγ","MIG/CXCL9","IL-10","MIP-1α/CCL3","IL-1β","MIP-1β/CCL4","IL-2","MIP-2/CXCL2","IL-3","MIP-3α/CCL20","IL-4","MIP-3β/CCL19","IL-5","sRAGE","IL-6","RANTES/CCL5","IL-7","TARC/CCL17","IL-9","TNFα","IL-10","VEGF-A","IL-11"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse High Sensitivity T Cell","sku":"MHSTCMAG-70K","factors":["GM-CSF","IL-10","IFNγ","IL-12 (p70)","IL-1α","IL-13","IL-1β","IL-17A/CTLA8","IL-2","KC/GRO/CINC-1/CXCL1","IL-4","LIX","IL-5","MCP-1/CCL2","IL-6","MIP-2/CXCL2","IL-7","TNFα"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Th17","sku":"MTH17MAG-47K","factors":["sCD40L","IL-17E/IL-25","GM-CSF","IL-17F","IFNγ","IL-21","IL-1β","IL-22","IL-2","IL-23","IL-4","IL-27","IL-5","IL-28B/IFNλ3","IL-6","IL-31","IL-10","IL-33/NF-HEV (mature)","IL-12 (p70)","MIP-3α/CCL20","IL-13","TNFα","IL-15","TNFβ/Lymphotoxin-α (LTA)","IL-17A/CTLA8"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse CD8+ T Cell","sku":"MCD8MAG-48K","factors":["sCD137/4-1BB/TNFRSF9","IL-4","sFas/TNFRSF6","IL-5","sFasL","IL-6","GM-CSF","IL-10","Granzyme B","IL-13","IFNγ","MIP-1β/CCL4","IL-2","RANTES/CCL5","TNFα"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Soluble Cytokine Receptor","sku":"MSCRMAG-42K","factors":["sCD30","sRAGE","sGP130","sTNF RI","sIL-1RI","sTNF RII","sIL-1RII","sVEGFR1/sFlt-1","sIL-2Rα","sVEGFR2/sKDR/sFlk-1","sIL-4R","sVEGFR3/sFlt-4","sIL-6R"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse MMP Panel 1（Serum/Plasma samples）","sku":"MMMP1MAG-79K","factors":["MMP-2","MMP-8","MMP-3"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse MMP Panel 2（Serum/Plasma samples）","sku":"MMMP2MAG-79K","factors":["proMMP-9","MMP-12"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse MMP Panel 3（Cell culture samples）","sku":"MMMP3MAG-79K","factors":["MMP-2","proMMP-9","MMP-3","MMP-12","MMP-8"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Immunoglobulin Isotyping","sku":"MGAMMAG-300K","factors":["IgA","IgG2b","IgG1","IgG3","IgG2a","IgM"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse IgE - Singleplex","sku":"MGAMMAG-300E","factors":["IgE"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Adipokine（Serum/Plasma samples）","sku":"MADKMAG-71K","factors":["IL-6","PAI-1 (total)","Insulin","Resistin","Leptin","TNFα","MCP-1/CCL2"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Adipocyte（Cell culture samples）","sku":"MADCYMAG-72K","factors":["Adiponectin","PAI-1 (total)","IL-6","Resistin","Leptin","TNFα","MCP-1/CCL2"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Adiponectin Singleplex（Serum/Plasma samples）","sku":"MADPNMAG-70K-01","factors":["Adiponectin"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Metabolic Hormone Expanded","sku":"MMHE-44K","factors":["Amylin (active)","Leptin","C-Peptide 2","MCP-1/CCL2","Ghrelin (active)","GIP (total)","Pancreatic Polypeptide (PP)","GLP-1 (active)","PYY (total)","GLP-1 (total)","Resistin","Glucagon","Secretin","IL-6","TNFα","Insulin"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Myokine","sku":"MMYOMAG-74K","factors":["BDNF","Irisin","Erythropoietin (EPO)","LIF","FGF-21","Myostatin/GDF8","Follistatin-like Protein 1 (FSTL1)","Oncostatin-M (OSM)","Osteocrin (OSTN)/Musclin","IL-6","Osteonectin/SPARC","IL-15"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Aging Panel 1","sku":"MAGE1MAG-25K","factors":["CTACK/CCL27","Jag1","FGF-21","Leptin","GnRH","Notch1","IL-6","TNFα"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Pituitary","sku":"MPTMAG-49K","factors":["ACTH","LH","BDNF","Prolactin","FSH","TSH","GH"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse TSH- Singleplex","sku":"RMTSH-200K","factors":["TSH"],"annotation":"3QC，有10PK大包装"},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse CVD Panel 1","sku":"MCVD1MAG-77K","factors":["sCD31/sPECAM-1","ProMMP-9","sE-Selectin","sP-Selectin","sICAM-1","Thrombomodulin","PAI-1 (total)"],"annotation":"BSL2"},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse CVD Panel 2","sku":"MCVD2MAG-77K","factors":["sCD40L","Oncostatin M (OSM)","CXCL16","Placental Growth Factor 2","Endocan-1 (ESM-1)","Troponin I (TnI)","Follistatin (FST)","Troponin T (TnT)","LIGHT"],"annotation":"BSL2"},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Acute Phase Panel 2","sku":"MAP2MAG-76K","factors":["α-1-Acid Glycoprotein（AGP）","CRP","α-2-Macroglobulin","Haptoglobin","Adipsin/Factor D","Serum Amyloid P (SAP)"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Humanized Mouse","sku":"HUMU-210K","factors":["G-CSF (Human)","IL-12p40 (Human)","G-CSF (Mouse)","IL-12p40 (Mouse)","GM-CSF (Human)","IL-12p70 (Human)","GM-CSF (Mouse)","IL-12p70 (Mouse)","IFNγ (Human)","IL-15 (Human)","IFNγ (Mouse)","IL-17A/CTLA8 (Human)","IL-10 (Human)","IL-17A/CTLA8 (Mouse)","IL-1β (Human)","IL-18 (Human)","IL-1β (Mouse)","IL-2 (Human)","IL-18 (Mouse)","IL-2 (Mouse)","IP-10/CXCL10 (Human)","IL-3 (Human)","IP-10/CXCL10 (Mouse)","IL-3 (Mouse)","MCP-1/CCL2 (Human)","IL-4 (Human)","MCP-1/CCL2 (Mouse)","IL-5 (Human)","M-CSF (Human)","IL-5 (Mouse)","M-CSF (Mouse)","IL-6 (Human)","MIG/CXCL9 (Human)","IL-6 (Mouse)","MIG/CXCL9 (Mouse)","IL-7 (Human)","TNFα (Human)","IL-8 (Human)","TNFα (Mouse)","KC/GRO/CINC-1/CXCL1 (Mouse)","IL-10 (Human)"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Angiogenesis/Growth Factor Panel 1","sku":"MAGPMAG-24K","factors":["sALK-1","Amphiregulin","IL-6","IL-17A/CTLA8","EGF","sFasL","Angiopoletin-2","IL-1β","Betacellulin","HGF","G-CSF","Follistatin (FST)","Endoglin","FGF-2/FGF-basic","Endothelin-1","sCD31/SPECAM-1","TNFα","Prolactin","Placental Growth Factor2","SDF-1/CXCL12","MIP-1α/CCL3","KC/GRO/CINC-1/CXCL1","MCP-1/CCL2","VEGF-A","Leptin","VEGF-C","VEGF-D"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Immuno-Oncology Checkpoint Protein Panel 1","sku":"MCKP1-110K","factors":["4-1BBL/TNFSF9","Galectin-1","5'-NT/CD73","Galectin-3","B7-H2/ICOSL","GITR","B7-H3/CD276","Granzyme B","BCA-1/CXCL-13","BTLA","CD137/4-1BB","HVEM","IFNγ","IL-10","CD226/DNAM-1","LAG-3","CD25/IL-2Rα","PD-1","CD27","PD-L1","CD40","PD-L2","CD80/B7-1","TIM-3","CTLA-4/CD152","TLR-2","E-Cadherin","TNFα"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Amyloid Beta","sku":"MABMAG-83K","factors":["Amyloid beta 1-40","Amyloid beta 1-42"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Neuropeptide","sku":"RMNPMAG-83K","factors":["α-MSH","β-Endorphin","Neurotensin","Oxytocin","Substance P"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Kidney Injury Panel1","sku":"MKI1MAG-94K","factors":["β-2-Microglobulin","Renin","IP-10/CXCL10","KIM-1","TIMP-1","VEGF-A"],"annotation":""},{"species":"Mouse","species_zh":"小鼠","type":"validation","name":"Mouse Kidney Injury Panel 2","sku":"MKI2MAG-94K","factors":["Clusterin","NGAL/Lipocalin-2","Cystatin C","Osteopontin (OPN)","EGF"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Cytokine/Chemokine","sku":"RECYTMAG-65K","factors":["EGF","IL-10","Eotaxin/CCL11","IL-12 (p70)","Fractalkine/CX3CL1","IL-13","G-CSF","IL-17A/CTLA8","GM-CSF","IL-18","IL-1β","KC/GRO/CINC-1/CXCL1","IL-2","IFNγ","IL-6","IL-1α","IL-5","IL-4","Leptin","LIX","MIP-2/CXCL2","VEGF","RANTES/CCL5","MCP-1/CCL2","TNFα","IP-10/CXCL10","MIP-1α/CCL3"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Adipokine（Serum/Plasma samples）","sku":"RADPKMAG-80K","factors":["IL-1β","MCP-1/CCL2","IL-6","PAI-1(total)","Insulin","TNFα","Leptin"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Adipocyte（Cell culture samples）","sku":"RADPCMAG-82K","factors":["Adiponectin","MCP-1/CCL2","IL-1β","PAI-1 (total)","IL-6","TNFα","Leptin"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Metabolic Hormone Expanded","sku":"RMHE-120K","factors":["Amylin (active)","Insulin","C-Peptide 2","Leptin","Ghrelin (active)","MCP-1/CCL2","GIP (total)","Pancreatic Polypeptide (PP)","GLP-1 (active)","GLP-1 (total)","Glucagon","PYY(total)","Secretin","IL-6","TNFα"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Myokine","sku":"RMYOMAG-88K","factors":["BDNF","Erythropoietin (EPO)","IL-15","Irisin","FGF-21","Follistatin-like Protein 1(FSTL1)","LIF","Myostatin/GDF8","Fractalkine/CX3CL1","IL-6","Osteocrin (OSTN)/Musclin","Osteonectin/SPARC"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Pituitary","sku":"RPTMAG-86K","factors":["ACTH","LH","BDNF","Prolactin","FSH","TSH","GH"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Stress Hormone","sku":"RSHMAG-69K","factors":["ACTH","Melatonin","Corticosterone"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Thyroid","sku":"RTHYMAG-30K","factors":["T3","TSH","T4"],"annotation":"BSL2"},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat TSH- Singleplex","sku":"RMTSH-200K","factors":["TSH"],"annotation":"3QC，有10PK大包装"},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Cardiac Injury Panel 1","sku":"RCI1MAG-87K","factors":["Cardiac Troponin I (cTnI)","FABP3","Cardiac Troponin T (cTnT)","Follistatin-like Protein 1 (FSTL1)","Creatine Kinase Muscle (CKM)","Myosin Light Chain 3 (MYL3)","TIMP-1"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Vascular Injury Panel 1（Serum/Plasma samples）","sku":"RV1MAG-26K","factors":["Caveolin-1","IL-6","Connective Tissue Growth Factor (CTGF)","MCP-1/CCL2","PAI-1 (total)","TIMP-1","KC/GRO/CINC-1/CXCL1","TNFα","VEGF"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Vascular Injury Panel 2（Serum/Plasma samples）","sku":"RV2MAG-26K","factors":["Adiponectin","sICAM-1","sE-Selectin"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Vascular Injury Panel 3（Serum/Plasma samples）","sku":"RV3MAG-26K","factors":["α-1-Acid Glycoprotein (AGP)","Haptoglobin","α-2-Macroglobulin (A2M)"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Bone Panel 1（Serum/Plasma samples）","sku":"RBN1MAG-31K","factors":["ACTH","Leptin","DKK1","Osteoprotegerin (OPG)","FGF-23","PTH","Insulin","Sclerosis (SOST)"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Neuropeptide","sku":"RMNPMAG-83K","factors":["α-MSH","Oxytocin","β-Endorphin","Substance P","Neurotensin"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Kidney Toxicity Panel 1（Urine samples）","sku":"RKTX1MAG-37K","factors":["Clusterin","Osteopontin (OPN)","GSTα","TIMP-1","IP-10/CXCL10","VEGF-A","KIM-1"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Kidney Toxicity Panel 2（Urine samples）","sku":"RKTX2MAG-37K","factors":["α-1-Acid Glycoprotein (AGP)","Cystatin C","Albumin","EGF","β-2-Microglobulin","NGAL/Lipocalin-2"],"annotation":""},{"species":"Rat","species_zh":"大鼠","type":"validation","name":"Rat Liver Injury","sku":"RLI1MAG-92K","factors":["5'NT/CD73","GSTα","ARG1","SDH","GOT1"],"annotation":""},{"species":"Bovine","species_zh":"牛","type":"validation","name":"Bovine Cytokine/Chemokine Panel 1","sku":"BCYT1-33K","factors":["IFNγ","IL-36RA/IL-1F5","IL-1α","IP-10/CXCL10","IL-1β","MCP-1/CCL2","IL-4","MIP-1α/CCL3","IL-6","MIP-1β/CCL4","IL-8/CXCL8","TNFα","IL-10","VEGF-A","IL-17A/CTLA8"],"annotation":""},{"species":"Bovine","species_zh":"牛","type":"validation","name":"Bovine Acute Phase Protein","sku":"BAPP1-150K","factors":["Haptoglobin","Fibrinogen"],"annotation":""},{"species":"Canine","species_zh":"犬","type":"validation","name":"Canine Cytokine/Chemokine","sku":"CCYTOMAG-90K","factors":["GM-CSF","IL-15","IFNγ","IL-18","IL-2","IP-10/CXCL10","IL-6","KC-like","IL-7","MCP-1/CCL2","IL-8/CXCL8","TNFα","IL-10"],"annotation":""},{"species":"Chicken","species_zh":"鸡","type":"validation","name":"Chicken Cytokine/Chemokine","sku":"GCYT1-16K","factors":["IFNα","IL-21","IFNγ","M-CSF","IL-2","MIP-1β/CCL4","IL-6","MIP-3α/CCL20","IL-10","RANTES/CCL5","IL-16","VEGF"],"annotation":""},{"species":"Equine","species_zh":"马","type":"validation","name":"Equine Cytokine/Chemokine","sku":"EQCYTMAG-93K","factors":["Eotaxin/CCL11","IL-6","FGF-2/FGF-basic","IL-8/CXCL8","Fractalkine/CX3CL1","IL-1α","G-CSF","IL-12 (p70)","GM-CSF","IL-13","GRO","IL-17A/CTLA8","IFNγ","IL-18","IL-10","IP-10/CXCL10","IL-1β","MCP-1/CCL2","IL-2","RANTES/CCL5","IL-4","TNFα","IL-5"],"annotation":""},{"species":"Feline","species_zh":"猫","type":"validation","name":"Feline Cytokine/Chemokine","sku":"FCYTMAG-20K-PMX","factors":["sFAS/TNFRSF6","Flt3 Ligand","GM-CSF","IFNγ","IL-1β","IL-2","IL-4","IL-6","IL-8/CXCL8","IL-12 (p40)","IL-13","IL-18","KC/GRO/CINC-1/CXCL1","MCP-1/CCL2","PDGF-BB","RANTES / CCL5","SCF","SDF-1/CXCL12","TNFα"],"annotation":"固定预混panel"},{"species":"Ovine","species_zh":"羊","type":"validation","name":"Ovine Cytokine/Chemokine Panel 1","sku":"SCYT1-91K","factors":["IFNγ","IL-1α","IL-1β","IL-4","IL-6","IL-8/CXCL8","IL-10","IL-17A/CTLA8","IL-36RA/IL-1F5","IP-10/CXCL10","MIP-1α/CCL3","MIP-1β/CCL4","TNFα","VEGF-A"],"annotation":""},{"species":"Ovine","species_zh":"羊","type":"validation","name":"Ovine Cytokine/Chemokine Panel 1","sku":"SCYT1-91K","factors":["IFNγ","IL-1α","IL-1β","IL-4","IL-6","IL-8/CXCL8","IL-10","IL-17A/CTLA8","IL-36RA/IL-1F5","IP-10/CXCL10","MIP-1α/CCL3","MIP-1β/CCL4","TNFα","VEGF-A"],"annotation":""},{"species":"Porcine","species_zh":"猪","type":"validation","name":"Porcine Cytokine/Chemokine","sku":"PCYTMAG-23K","factors":["GM-CSF","IFNγ","IL-1α","IL-1β","IL-1Ra","IL-2","IL-4","IL-6","IL-8/CXCL8","IL-10","IL-12","IL-18","TNFα"],"annotation":""},{"species":"Porcine","species_zh":"猪","type":"validation","name":"Porcine Acute Phase Protein","sku":"PAPP1-160K","factors":["CRP","Haptoglobin"],"annotation":""},{"species":"Canine","species_zh":"犬","type":"validation","name":"Canine Gut Hormone","sku":"CGTMAG-98K","factors":["Amylin (total)","Insulin","Ghrelin (active)","Leptin","GIP (total)","Pancreatic Polypeptide (PP)","GLP-1 (active)","PYY (total)","Glucagon"],"annotation":"BSL2"},{"species":"Canine","species_zh":"犬","type":"validation","name":"Canine Pituitary Expanded Panel","sku":"CANPIT-96K","factors":["ACTH","LH","FSH","Prolactin","GH","TSH"],"annotation":""},{"species":"Canine","species_zh":"犬","type":"validation","name":"Canine Kidney Toxicity Expanded Panel 1（尿液）","sku":"CKT1MAG-97K","factors":["Clusterin","MCP-1/CCL2","Cystatin C","NGAL/Lipocalin-2","IL-8/CXCL8","Osteopontin (OPN)","KIM-1"],"annotation":""},{"species":"Canine","species_zh":"犬","type":"validation","name":"Canine Kidney Toxicity Expanded Panel 2（尿液）","sku":"CKT2MAG-97K","factors":["Albumin","RBP4","β-2-Microglobulin","TFF-3"],"annotation":""},{"species":"Multi-Species","species_zh":"多物种","type":"validation","name":"Multi-Species TGFβ Singleplex","sku":"TGFBMAG-64K-01","factors":["TGFβ1"],"annotation":"具体物种见手册"},{"species":"Multi-Species","species_zh":"多物种","type":"validation","name":"Multi-Species TGFβ 3-Plex","sku":"TGFBMAG-64K-03","factors":["TGFβ1","TGFβ2","TGFβ3"],"annotation":"具体物种见手册"},{"species":"Multi-Species","species_zh":"多物种","type":"validation","name":"Multi-Species Hormone","sku":"MSHMAG-21K","factors":["Cortisol","Estradiol","Progesterone","Testosterone","T3","T4"],"annotation":"具体物种见手册"}],"aliases":{"sFas":["sFas/TNFRSF6","TNFRSF6"],"TNFRSF6":["sFas","sFas/TNFRSF6","SFAS/TNFRSF6","sFAS","sFAS/TNFRSF6","SFAS"],"MCP-1":["MCP-1/CCL2 (Human)","MCP-1/CCL2 (Mouse)","CCL2 (Mouse)","CCL2","MCP-1/CCL2","CCL2 (Human)"],"CCL2 (Mouse)":["MCP-1","MCP-1/CCL2 (Mouse)"],"Eotaxin-3":["Eotaxin-3/CCL26","CCL26"],"CCL26":["Eotaxin-3/CCL26","Eotaxin-3"],"TRAIL":["TNFSF10","TRAIL/TNFSF10"],"TNFSF10":["TRAIL/TNFSF10","TRAIL"],"MIG":["MIG/CXCL9 (Mouse)","CXCL9 (Mouse)","MIG/CXCL9 (Human)","CXCL9 (Human)","MIG/CXCL9","CXCL9"],"CXCL9 (Human)":["MIG/CXCL9 (Human)","MIG"],"IL-17E":["IL-25","IL-17E / IL-25","IL-17E/IL-25"],"IL-25":["IL-17E","IL-17E / IL-25","IL-17E/IL-25"],"KC":["KC/GRO/CINC-1/CXCL1","CXCL1 (Mouse)","GRO","CINC-1","KC/GRO/CINC-1/CXCL1 (Mouse)","CXCL1"],"GRO":["KC/GRO/CINC-1/CXCL1","CXCL1 (Mouse)","KC","CINC-1","KC/GRO/CINC-1/CXCL1 (Mouse)","CXCL1"],"CINC-1":["KC/GRO/CINC-1/CXCL1","CXCL1 (Mouse)","KC","GRO","KC/GRO/CINC-1/CXCL1 (Mouse)","CXCL1"],"CXCL1 (Mouse)":["CINC-1","KC/GRO/CINC-1/CXCL1 (Mouse)","GRO","KC"],"IP-10":["CXCL10","CXCL10 (Mouse)","IP-10/CXCL10 (Mouse)","IP-10/CXCL10","IP-10/CXCL10 (Human)","CXCL10 (Human)"],"CXCL10 (Mouse)":["IP-10/CXCL10 (Mouse)","IP-10"],"HCC-4":["HCC-4/CCL16","CCL16"],"CCL16":["HCC-4","HCC-4/CCL16"],"BAFF":["BAFF/BLYS","BAFF/Blys","BLYS","Blys"],"Blys":["BAFF","BAFF/Blys"],"MCP-4":["CCL13","MCP-4/CCL13"],"CCL13":["MCP-4","MCP-4/CCL13"],"NAP-2":["NAP-2/CXCL7","CXCL7"],"CXCL7":["NAP-2/CXCL7","NAP-2"],"MIP-1α":["MIP-1α/CCL3","MIP-1α / CCL3","CCL3"],"CCL3":["MIP-1α/CCL3","MIP-1α / CCL3","MIP-1α"],"IGF2BP3":["IMP3","IGF2BP3/IMP3"],"IMP3":["IGF2BP3","IGF2BP3/IMP3"],"ANNA2 (RI)":["NOVA1","ANNA2 (RI)/NOVA1"],"NOVA1":["ANNA2 (RI)/NOVA1","ANNA2 (RI)"],"Lymphotactin":["XCL1","Lymphotactin/XCL1"],"XCL1":["Lymphotactin","Lymphotactin/XCL1"],"MIP-3α":["CCL20","MIP-3α/CCL20","MIP-3α / CCL20"],"CCL20":["MIP-3α/CCL20","MIP-3α","MIP-3α / CCL20"],"4-1BBL":["4-1BBL/TNFSF9","TNFSF9","TNFF9","4-1BBL/TNFF9"],"TNFSF9":["4-1BBL","4-1BBL/TNFSF9"],"IL-28B":["IL-28B/IFNλ3","IFNλ3"],"IFNλ3":["IL-28B/IFNλ3","IL-28B"],"BCA-1":["BCA-1/CXCL-13","CXCL-13","BCA-1/CXCL13","CXCL13"],"CXCL-13":["BCA-1/CXCL-13","BCA-1"],"sEGFR":["sEGFR/sHER1/ErbB1","sHER1","sErbB1","sEGFR/sHER1/sErbB1","ErbB1"],"sHER1":["sEGFR/sHER1/ErbB1","sEGFR","sErbB1","sEGFR/sHER1/sErbB1","ErbB1"],"sErbB1":["sEGFR/sHER1/sErbB1","sEGFR","sHER1"],"IL-38":["IL-1F10","IL-38/IL-1F10"],"IL-1F10":["IL-38","IL-38/IL-1F10"],"TNFβ":["TNFβ/Lymphotoxin-α (LTA)","LTA","TNFβ/LTA","Lymphotoxin-α (LTA)"],"LTA":["TNFβ/LTA","TNFβ"],"PDGF-AB":["PDGF-AB/BB","BB"],"BB":["PDGF-AB/BB","PDGF-AB"],"CTLA-4":["CTLA-4/CD152","CD152"],"CD152":["CTLA-4/CD152","CTLA-4"],"IL-17A":["IL-17A/CTLA8","IL-17A/CTLA8 (Mouse)","CTLA8 (Mouse)","CTLA8 (Human)","IL-17A / CTLA8","CTLA8","IL-17A/CTLA8 (Human)"],"CTLA8 (Mouse)":["IL-17A","IL-17A/CTLA8 (Mouse)"],"B7-H2":["ICOSL","B7-H2/ICOSL"],"ICOSL":["B7-H2/ICOSL","B7-H2"],"Osteocrin (OSTN)":["Osteocrin (OSTN)/Musclin","Musclin"],"Musclin":["Osteocrin (OSTN)/Musclin","Osteocrin (OSTN)"],"PARK7":["DJ1","PARK7/DJ1"],"DJ1":["PARK7/DJ1","PARK7"],"RANTES":["RANTES/CCL5","CCL5","RANTES / CCL5"],"CCL5":["RANTES","RANTES/CCL5","RANTES / CCL5"],"SSA":["SSA/Ro60","SSA/Ro52","Ro60","Ro52"],"Ro52":["SSA/Ro52","SSA"],"5'NT":["5'NT/CD73","CD73"],"CD73":["5'-NT/CD73","5'NT","5'NT/CD73","5'-NT"],"CXCL6":["GCP-2","CXCL6/GCP-2"],"GCP-2":["CXCL6","CXCL6/GCP-2"],"CCL2 (Human)":["MCP-1/CCL2 (Human)","MCP-1"],"PM":["PM/Scl 100","Scl 100"],"Scl 100":["PM/Scl 100","PM"],"MPIF":["CCL23","MPIF/CCL23"],"CCL23":["MPIF","MPIF-1","MPIF/CCL23","MPIF-1/CCL23"],"MIP-2":["CXCL2","MIP-2/CXCL2"],"CXCL2":["MIP-2","MIP-2/CXCL2"],"CXCL9":["MIG","MIG/CXCL9"],"Platelet Factor 4(PF4)":["Platelet Factor 4(PF4)/CXCL4","CXCL4"],"CXCL4":["Platelet Factor 4(PF4)","Platelet Factor 4(PF4)/CXCL4"],"CD25":["CD25/IL-2Rα","IL-2Rα"],"IL-2Rα":["CD25","CD25/IL-2Rα"],"MIP-1δ":["MIP-5","MIP-1δ/MIP-5/CCL15","CCL15"],"MIP-5":["MIP-1δ","MIP-1δ/MIP-5/CCL15","CCL15"],"CCL15":["MIP-1δ","MIP-5","MIP-1δ/MIP-5/CCL15"],"IL-36RA":["IL-36RA/IL-1F5","IL-1F5"],"IL-1F5":["IL-36RA/IL-1F5","IL-36RA"],"SFAS":["TNFRSF6","SFAS/TNFRSF6"],"Adipsin":["Adipsin/Factor D","Factor D"],"Factor D":["Adipsin","Adipsin/Factor D"],"BLYS":["BAFF/BLYS","BAFF"],"FGL1":["FGL1/Hepassocin","Hepassocin"],"Hepassocin":["FGL1/Hepassocin","FGL1"],"MCP-5":["CCL12","MCP-5/CCL12"],"CCL12":["MCP-5/CCL12","MCP-5"],"CXCL9 (Mouse)":["MIG/CXCL9 (Mouse)","MIG"],"sCD137":["4-1BB","sCD137/4-1BB/TNFRSF9","TNFRSF9"],"4-1BB":["sCD137/4-1BB/TNFRSF9","TNFRSF9","CD137","sCD137","CD137/4-1BB"],"TNFRSF9":["4-1BB","sCD137","sCD137/4-1BB/TNFRSF9"],"ErbB1":["sEGFR/sHER1/ErbB1","sEGFR","sHER1"],"IL-33":["IL-33/NF-HEV (mature)","IL-33 / NF-HEV (mature)","NF-HEV (mature)"],"NF-HEV (mature)":["IL-33/NF-HEV (mature)","IL-33","IL-33 / NF-HEV (mature)"],"sCD31":["sCD31/SPECAM-1","SPECAM-1","sCD31/sPECAM-1","sPECAM-1"],"sPECAM-1":["sCD31/sPECAM-1","sCD31"],"MDC":["CCL22","MDC/CCL22"],"CCL22":["MDC/CCL22","MDC"],"B7-H5":["B7-H5/VISTA","VISTA"],"VISTA":["B7-H5/VISTA","B7-H5"],"CCL2":["MCP-1/CCL2","MCP-1"],"PCA1 (Yo)":["CDR2","PCA1 (Yo)/CDR2"],"CDR2":["PCA1 (Yo)/CDR2","PCA1 (Yo)"],"B7-H4":["VTCN1","B7-H4/VTCN1"],"VTCN1":["B7-H4","B7-H4/VTCN1"],"sc-Kit":["sStem Cell Factor Receptor (SCFR)","sc-Kit/sStem Cell Factor Receptor (SCFR)"],"sStem Cell Factor Receptor (SCFR)":["sc-Kit/sStem Cell Factor Receptor (SCFR)","sc-Kit"],"MCAM":["MUC18","MCAM/MUC18"],"MUC18":["MCAM/MUC18","MCAM"],"CXCL10 (Human)":["IP-10/CXCL10 (Human)","IP-10"],"BRAK":["CXCL14","BRAK/CXCL14"],"CXCL14":["BRAK/CXCL14","BRAK"],"CD226":["CD226/DNAM-1","DNAM-1"],"DNAM-1":["CD226/DNAM-1","CD226"],"IGF2BP2":["IMP2","IGF2BP2/IMP2"],"IMP2":["IGF2BP2","IGF2BP2/IMP2"],"CTACK":["CTACK/CCL27","CCL27"],"CCL27":["CTACK/CCL27","CTACK"],"PARK5":["PARK5/UCHL1","UCHL1"],"UCHL1":["PARK5/UCHL1","PARK5"],"ENA-78":["CXCL5","ENA-78/CXCL5"],"CXCL5":["ENA-78/CXCL5","ENA-78"],"SDF-1":["SDF-1/CXCL12","CXCL12"],"CXCL12":["SDF-1","SDF-1/CXCL12"],"IL-14":["α-Taxilin","IL-14/α-Taxilin"],"α-Taxilin":["IL-14","IL-14/α-Taxilin"],"sVEGFR3":["sFlt-4","sVEGFR3/sFlt-4"],"sFlt-4":["sVEGFR3","sVEGFR3/sFlt-4"],"TARC":["TARC/CCL17","CCL17"],"CCL17":["TARC","TARC/CCL17"],"CTLA8":["IL-17A/CTLA8","IL-17A / CTLA8","IL-17A"],"CD30":["CD30/TNFRSF8","TNFRSF8"],"TNFRSF8":["CD30/TNFRSF8","CD30"],"TNFF9":["4-1BBL","4-1BBL/TNFF9"],"Myostatin":["GDF8","Myostatin/GDF8"],"GDF8":["Myostatin","Myostatin/GDF8"],"Fractalkine":["Fractalkine/CX3CL1","CX3CL1"],"CX3CL1":["Fractalkine","Fractalkine/CX3CL1"],"MIP-1β":["CCL4","MIP-1β/CCL4"],"CCL4":["MIP-1β","MIP-1β/CCL4"],"HCC-1":["HCC-1/CCL14","CCL14"],"CCL14":["HCC-1/CCL14","HCC-1"],"RNP":["RNP/Sm","Sm"],"Sm":["RNP/Sm","RNP"],"IL-28A":["IL-28A / IFNλ2","IFNλ2","IL-28A/IFNλ2"],"IFNλ2":["IL-28A / IFNλ2","IL-28A","IL-28A/IFNλ2"],"OX40":["OX40/CD134","CD134"],"CD134":["OX40","OX40/CD134"],"CD86":["CD86/B7-2","B7-2"],"B7-2":["CD86","CD86/B7-2"],"NCAML1":["L1CAM","NCAML1/L1CAM/CD171","CD171"],"L1CAM":["CD171","NCAML1/L1CAM/CD171","NCAML1"],"CD171":["L1CAM","NCAML1/L1CAM/CD171","NCAML1"],"I-TAC":["I-TAC/CXCL11","I-TAC / CXCL11","CXCL11"],"CXCL11":["I-TAC/CXCL11","I-TAC / CXCL11","I-TAC"],"MCP-3":["MCP-3/CCL7","CCL7"],"CCL7":["MCP-3","MCP-3/CCL7"],"Osteonectin":["Osteonectin/SPARC","SPARC"],"SPARC":["Osteonectin/SPARC","Osteonectin"],"Exodus-2":["CCL21","Exodus-2/CCL21/6Ckine","6Ckine"],"CCL21":["6Ckine/CCL21","6Ckine","Exodus-2/CCL21/6Ckine","Exodus-2"],"6Ckine":["6Ckine/CCL21","CCL21","Exodus-2/CCL21/6Ckine","Exodus-2"],"I-309":["CCL1","I-309/CCL1"],"CCL1":["I-309/CCL1","I-309"],"NGAL":["NGAL/Lipocalin-2","Lipocalin-2"],"Lipocalin-2":["NGAL/Lipocalin-2","NGAL"],"HER2":["HER2/ErbB2","ErbB2"],"ErbB2":["HER2","HER2/ErbB2"],"SSB":["La","SSB/La"],"La":["SSB/La","SSB"],"IL-8":["CXCL8","IL-8/CXCL8"],"CXCL8":["IL-8","IL-8/CXCL8"],"MIP-3β":["MIP-3β/CCL19","CCL19"],"CCL19":["MIP-3β/CCL19","MIP-3β"],"SPECAM-1":["sCD31","sCD31/SPECAM-1"],"CCL25":["CCL25/TECK","TECK"],"TECK":["CCL25/TECK","CCL25"],"Eotaxin-2":["MPIF-2","CCL24","Eotaxin-2/CCL24/MPIF-2"],"CCL24":["MPIF-2","Eotaxin-2","Eotaxin-2/CCL24/MPIF-2"],"MPIF-2":["Eotaxin-2","Eotaxin-2/CCL24/MPIF-2","CCL24"],"CTAG1B":["CTAG1B/NY-ESO-1","NY-ESO-1"],"NY-ESO-1":["CTAG1B/NY-ESO-1","CTAG1B"],"IL-29":["IFNλ1","IFNα1","IL-29/IFNα1","IL-29/IFNλ1"],"IFNα1":["IL-29/IFNα1","IL-29"],"IL-36β":["IL-1F8","IL-36β/IL-1F8"],"IL-1F8":["IL-36β","IL-36β/IL-1F8"],"Survivin":["BIRC5","Survivin/BIRC5"],"BIRC5":["Survivin","Survivin/BIRC5"],"IFNλ1":["IL-29","IL-29/IFNλ1"],"sHER3":["sEGFR3","sErbB3","sHER3/sEGFR3/sErbB3"],"sEGFR3":["sHER3","sErbB3","sHER3/sEGFR3/sErbB3"],"sErbB3":["sEGFR3","sHER3","sHER3/sEGFR3/sErbB3"],"sHGFR":["sc-Met","sHGFR/sc-Met"],"sc-Met":["sHGFR","sHGFR/sc-Met"],"FGF-2":["FGF-2/FGF-basic","FGF-basic"],"FGF-basic":["FGF-2","FGF-2/FGF-basic"],"CTLA8 (Human)":["IL-17A","IL-17A/CTLA8 (Human)"],"sHER2":["sErbB2","sHER2/sEGFR2/sErbB2","sEGFR2"],"sEGFR2":["sHER2","sHER2/sEGFR2/sErbB2","sErbB2"],"sErbB2":["sHER2","sHER2/sEGFR2/sErbB2","sEGFR2"],"CXCL1":["KC/GRO/CINC-1/CXCL1","GROα","KC","GRO","CINC-1"],"MIP-4":["PARC","MIP-4/PARC/CCL18","CCL18"],"PARC":["MIP-4/PARC/CCL18","MIP-4","CCL18"],"CCL18":["PARC","MIP-4/PARC/CCL18","MIP-4"],"sFAS":["TNFRSF6","sFAS/TNFRSF6"],"PVR":["PVR/CD155","CD155"],"CD155":["PVR/CD155","PVR"],"YKL40":["YKL40/CHI3L1","CHI3L1"],"CHI3L1":["YKL40","YKL40/CHI3L1"],"5'-NT":["5'-NT/CD73","CD73"],"sVEGFR1":["sVEGFR1/sFlt-1","sFlt-1"],"sFlt-1":["sVEGFR1/sFlt-1","sVEGFR1"],"Ro60":["SSA/Ro60","SSA"],"MCP-2":["MCP-2/CCL8","CCL8"],"CCL8":["MCP-2/CCL8","MCP-2"],"sVEGFR2":["sVEGFR2/sKDR/sFlk-1","sFlk-1","sKDR"],"sKDR":["sVEGFR2/sKDR/sFlk-1","sVEGFR2","sFlk-1"],"sFlk-1":["sVEGFR2/sKDR/sFlk-1","sVEGFR2","sKDR"],"CXCL10":["IP-10/CXCL10","IP-10"],"Angiostatin":["Kringle","Angiostatin/Kringle"],"Kringle":["Angiostatin","Angiostatin/Kringle"],"CCNB1":["Cyclin B1","CCNB1/Cyclin B1"],"Cyclin B1":["CCNB1","CCNB1/Cyclin B1"],"B7-H3":["CD276","B7-H3/CD276"],"CD276":["B7-H3","B7-H3/CD276"],"Eotaxin":["CCL11","Eotaxin/CCL11"],"CCL11":["Eotaxin/CCL11","Eotaxin"],"CD80":["B7-1","CD80/B7-1"],"B7-1":["CD80","CD80/B7-1"],"CD137":["CD137/4-1BB","4-1BB"],"FGF-1":["FGF-acidic","FGF-1/FGF-acidic"],"FGF-acidic":["FGF-1","FGF-1/FGF-acidic"],"MPIF-1":["CCL23","MPIF-1/CCL23"],"IL-37":["IL-1F7","IL-37/IL-1F7"],"IL-1F7":["IL-37","IL-37/IL-1F7"],"Lymphotoxin-α (LTA)":["TNFβ/Lymphotoxin-α (LTA)","TNFβ"],"CXCL13":["BCA-1/CXCL13","BCA-1"],"GROα":["CXCL1"],"TNFα":["TNF-alpha"],"TNF-alpha":["TNFα"],"IFNγ":["IFN-gamma"],"IFN-gamma":["IFNγ"],"VEGF-A":["VEGF"],"VEGF":["VEGF-A"]}};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  species: null,
+  speciesZh: null,
+  type: null,
+  factors: [],
+  debounceTimer: null
+};
+
+const SPECIES_LIST = [
+  {en:'Human',     zh:'人类',     icon:'👤', hasType:true },
+  {en:'Mouse',     zh:'小鼠',     icon:'🐭', hasType:false},
+  {en:'Rat',       zh:'大鼠',     icon:'🐀', hasType:false},
+  {en:'NHP',       zh:'非人灵长类',icon:'🐒', hasType:false},
+  {en:'Canine',    zh:'犬',       icon:'🐕', hasType:false},
+  {en:'Feline',    zh:'猫科',     icon:'🐈', hasType:false},
+  {en:'Bovine',    zh:'牛',       icon:'🐄', hasType:false},
+  {en:'Chicken',   zh:'鸡',       icon:'🐓', hasType:false},
+  {en:'Equine',    zh:'马',       icon:'🐴', hasType:false},
+  {en:'Ovine',     zh:'羊',       icon:'🐑', hasType:false},
+  {en:'Porcine',   zh:'猪',       icon:'🐷', hasType:false},
+  {en:'Multi-Species',zh:'多物种',icon:'🌐', hasType:false}
+];
+
+const EXAMPLE_FACTORS = {
+  'Human':['IL-6','TNFα','IFNγ','MCP-1','IL-2','VEGF-A','Fractalkine'],
+  'Mouse':['IL-6','TNFα','IFNγ','MCP-1','IL-2','VEGF-A','G-CSF'],
+  'Rat':['IL-6','TNFα','IFNγ','MCP-1','IL-2','Leptin'],
+  'NHP':['IL-6','TNFα','IFNγ','MCP-1','IL-2','Fractalkine'],
+  'default':['IL-6','TNFα','IFNγ','MCP-1']
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ALIAS RESOLUTION
+// ═══════════════════════════════════════════════════════════════
+const aliasMap = MILLIPLEX_DB.aliases || {};
+
+function resolveAllAliases(name) {
+  // Returns a set of all known names for a given factor
+  const lower = name.toLowerCase().trim();
+  const results = new Set([lower]);
+  // Direct lookup
+  for (const [key, vals] of Object.entries(aliasMap)) {
+    if (key.toLowerCase() === lower) {
+      vals.forEach(v => results.add(v.toLowerCase()));
+    }
+    if (vals.some(v => v.toLowerCase() === lower)) {
+      results.add(key.toLowerCase());
+      vals.forEach(v => results.add(v.toLowerCase()));
+    }
+  }
+  // Split by slash for inline aliases e.g. "Fractalkine/CX3CL1"
+  if (name.includes('/')) {
+    name.split('/').forEach(p => {
+      const pt = p.trim().toLowerCase();
+      if (pt) results.add(pt);
+    });
+  }
+  return results;
+}
+
+function buildFactorIndex(box) {
+  // Build a set of all lowercase aliases for every factor in this kit
+  const idx = new Set();
+  (box.factors || []).forEach(f => {
+    resolveAllAliases(f).forEach(a => idx.add(a));
+    // Also add the slash-separated parts
+    if (f.includes('/')) {
+      f.split('/').forEach(p => idx.add(p.trim().toLowerCase()));
+    }
+    idx.add(f.toLowerCase().trim());
+  });
+  return idx;
+}
+
+// Pre-build factor indexes for all kits
+const factorIndexes = MILLIPLEX_DB.datasets.map(box => buildFactorIndex(box));
+
+// ═══════════════════════════════════════════════════════════════
+// MATCHING INPUT FACTOR -> KIT FACTOR
+// ═══════════════════════════════════════════════════════════════
+function matchFactor(inputF, kitIndex) {
+  const aliases = resolveAllAliases(inputF);
+  for (const alias of aliases) {
+    if (kitIndex.has(alias)) return true;
+    // substring match for things like "IL-12 (p70)" vs "IL-12(p70)"
+    for (const ki of kitIndex) {
+      if (ki.replace(/[\s\(\)]/g,'') === alias.replace(/[\s\(\)]/g,'')) return true;
+      if (ki.includes(alias) || alias.includes(ki)) {
+        // Only allow substring match if length is meaningful
+        if (alias.length > 4 && ki.length > 4) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function matchedFactorsForKit(inputFactors, kitIdx) {
+  return inputFactors.filter(f => matchFactor(f, kitIdx));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OPTIMAL KIT SELECTION (greedy set cover, min kits first)
+// ═══════════════════════════════════════════════════════════════
+function findOptimalKits(inputFactors, kits) {
+  if (!inputFactors.length) return { bestKits:[], coveredFactors:[], uncoveredFactors:[] };
+  
+  const targetSet = new Set(inputFactors.map(f => f.toLowerCase()));
+  
+  // Pre-compute coverage for each kit
+  const kitCoverage = kits.map((box, i) => {
+    const covered = matchedFactorsForKit(inputFactors, factorIndexes[MILLIPLEX_DB.datasets.indexOf(box)]);
+    return { box, covered, count: covered.length };
+  }).filter(k => k.count > 0)
+    .sort((a,b) => b.count - a.count);
+
+  if (!kitCoverage.length) {
+    return { bestKits:[], coveredFactors:[], uncoveredFactors:[...inputFactors] };
+  }
+
+  // Try single kit full coverage
+  const fullSingle = kitCoverage.find(k => k.count >= inputFactors.length);
+  if (fullSingle) {
+    return {
+      bestKits: [{ box: fullSingle.box, matched: fullSingle.covered }],
+      coveredFactors: fullSingle.covered,
+      uncoveredFactors: inputFactors.filter(f => !fullSingle.covered.map(x=>x.toLowerCase()).includes(f.toLowerCase())),
+      note: '1个试剂盒可完整覆盖全部因子 ✓'
+    };
+  }
+
+  // Try 2-kit combinations (top candidates only, max 15 to keep fast)
+  const topN = kitCoverage.slice(0, 15);
+  let bestTwo = null;
+  let bestTwoCoverage = 0;
+
+  for (let i = 0; i < topN.length; i++) {
+    for (let j = i+1; j < topN.length; j++) {
+      const a = topN[i], b = topN[j];
+      const combined = new Set([...a.covered.map(x=>x.toLowerCase()), ...b.covered.map(x=>x.toLowerCase())]);
+      const cnt = inputFactors.filter(f => combined.has(f.toLowerCase())).length;
+      if (cnt > bestTwoCoverage) {
+        bestTwoCoverage = cnt;
+        bestTwo = [a, b];
+      }
+    }
+  }
+
+  if (bestTwo) {
+    const a = bestTwo[0], b = bestTwo[1];
+    const combinedCovered = inputFactors.filter(f => {
+      const fl = f.toLowerCase();
+      return a.covered.map(x=>x.toLowerCase()).includes(fl) || b.covered.map(x=>x.toLowerCase()).includes(fl);
+    });
+    return {
+      bestKits: [
+        { box: a.box, matched: a.covered },
+        { box: b.box, matched: b.covered }
+      ],
+      coveredFactors: combinedCovered,
+      uncoveredFactors: inputFactors.filter(f => !combinedCovered.map(x=>x.toLowerCase()).includes(f.toLowerCase())),
+      note: bestTwoCoverage >= inputFactors.length
+        ? `2个试剂盒可完整覆盖全部${inputFactors.length}个因子 ✓`
+        : `2个试剂盒最优组合，覆盖${bestTwoCoverage}/${inputFactors.length}个因子`
+    };
+  }
+
+  // Fallback: single best
+  const best = kitCoverage[0];
+  return {
+    bestKits: [{ box: best.box, matched: best.covered }],
+    coveredFactors: best.covered,
+    uncoveredFactors: inputFactors.filter(f => !best.covered.map(x=>x.toLowerCase()).includes(f.toLowerCase())),
+    note: `最优单盒覆盖${best.count}/${inputFactors.length}个因子`
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARSE INPUT
+// ═══════════════════════════════════════════════════════════════
+function parseFactors(text) {
+  if (!text || !text.trim()) return [];
+  const parts = text
+    .split(/[
+,，;；	]/)
+    .flatMap(p => p.split(/\s{2,}/))
+    .map(p => p.trim())
+    .filter(p => p.length > 1);
+  return [...new Set(parts)];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+function renderSpecies() {
+  const grid = document.getElementById('speciesGrid');
+  grid.innerHTML = '';
+  SPECIES_LIST.forEach(sp => {
+    const card = document.createElement('div');
+    card.className = 'species-card';
+    card.innerHTML = `<span class="icon">${sp.icon}</span><span class="label">${sp.zh}</span>`;
+    card.onclick = () => selectSpecies(sp);
+    grid.appendChild(card);
+  });
+}
+
+function selectSpecies(sp) {
+  state.species = sp.en;
+  state.speciesZh = sp.zh;
+  state.type = null;
+  if (sp.hasType) {
+    showPage('type');
+    updateBreadcrumb([sp.zh]);
+  } else {
+    state.type = 'all';
+    goToFactors();
+  }
+}
+
+function selectType(type) {
+  state.type = type;
+  goToFactors();
+}
+
+function goToFactors() {
+  const sp = SPECIES_LIST.find(s => s.en === state.species);
+  const typeLabel = state.type === 'screening' ? '筛查型' : state.type === 'validation' ? '验证型' : '';
+  updateBreadcrumb([state.speciesZh, typeLabel].filter(Boolean));
+  document.getElementById('factorPageTitle').textContent =
+    `输入检测因子 — ${state.speciesZh}${typeLabel ? ' · ' + typeLabel : ''}`;
+  
+  // Set example tips
+  const examples = EXAMPLE_FACTORS[state.species] || EXAMPLE_FACTORS.default;
+  const tips = document.getElementById('exampleTips');
+  tips.innerHTML = '<span style="font-size:12px;color:var(--muted);margin-right:4px;">示例因子：</span>' +
+    examples.map(e => `<span class="tip-tag" onclick="addExample('${e}')">${e}</span>`).join('');
+  
+  document.getElementById('factorInput').value = '';
+  document.getElementById('results').innerHTML = '';
+  setStatus('idle','等待输入因子…');
+  showPage('factors');
+  setTimeout(() => document.getElementById('factorInput').focus(), 100);
+}
+
+function addExample(factor) {
+  const ta = document.getElementById('factorInput');
+  const val = ta.value.trim();
+  ta.value = val ? val + '
+' + factor : factor;
+  ta.dispatchEvent(new Event('input'));
+}
+
+function backFromFactors() {
+  const sp = SPECIES_LIST.find(s => s.en === state.species);
+  if (sp && sp.hasType) {
+    showPage('type');
+    updateBreadcrumb([state.speciesZh]);
+  } else {
+    goBack('species');
+  }
+}
+
+function goBack(target) {
+  state.species = null; state.speciesZh = null; state.type = null;
+  showPage('species');
+  updateBreadcrumb([]);
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+function updateBreadcrumb(steps) {
+  const bc = document.getElementById('breadcrumb');
+  const allSteps = ['选择种属', ...steps, steps.length ? '因子输入' : ''].filter(Boolean);
+  bc.innerHTML = allSteps.map((s, i) => {
+    if (i === allSteps.length - 1) return `<span class="breadcrumb-current">${'①②③'.charAt(i) || (i+1) + '.'} ${s}</span>`;
+    return `<span class="breadcrumb-item" onclick="goBack('species')">${'①②③'.charAt(i) || (i+1) + '.'} ${s}</span><span class="breadcrumb-sep">›</span>`;
+  }).join('');
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot' + (type === 'idle' ? ' idle' : '');
+  txt.textContent = text;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SEARCH & RENDER RESULTS
+// ═══════════════════════════════════════════════════════════════
+function performSearch(inputFactors) {
+  const resultsEl = document.getElementById('results');
+  
+  if (!inputFactors.length) {
+    resultsEl.innerHTML = '';
+    setStatus('idle','等待输入因子…');
+    return;
+  }
+  
+  setStatus('active','正在检索最优匹配…');
+  
+  // Filter kits by species + type
+  let pool = MILLIPLEX_DB.datasets.filter(d => {
+    if (state.species === 'Multi-Species') return d.species === 'Multi-Species';
+    if (state.species === 'all') return true;
+    if (!d.species) return false;
+    if (d.species !== state.species) return false;
+    if (state.type === 'all' || !state.type) return true;
+    if (state.type === 'screening') return d.type === 'screening';
+    if (state.type === 'validation') return d.type === 'validation' || d.type !== 'screening';
+    return true;
+  });
+  
+  const result = findOptimalKits(inputFactors, pool);
+  setStatus('idle', result.note || `检索完成`);
+  
+  if (!result.bestKits.length) {
+    resultsEl.innerHTML = `
+      <div class="no-results">
+        <div class="no-icon">🔍</div>
+        <div>在当前种属条件下未找到匹配的试剂盒</div>
+        <div style="font-size:12px;margin-top:6px;color:var(--muted)">请检查因子名称拼写，或尝试使用因子别名</div>
+      </div>`;
+    return;
+  }
+  
+  const covered = result.coveredFactors.length;
+  const total = inputFactors.length;
+  const uncovered = result.uncoveredFactors;
+  const kitCount = result.bestKits.length;
+  
+  let html = `
+  <div class="result-summary">
+    <div class="summary-stat">
+      <div class="num">${kitCount}</div>
+      <div class="lbl">推荐试剂盒</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat">
+      <div class="num">${covered}/${total}</div>
+      <div class="lbl">因子覆盖</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat">
+      <div class="num">${uncovered.length}</div>
+      <div class="lbl">未覆盖因子</div>
+    </div>
+    <div class="summary-text">${result.note || ''}</div>
+  </div>`;
+  
+  result.bestKits.forEach((item, idx) => {
+    const box = item.box;
+    const matched = item.matched.map(f => f.toLowerCase());
+    const annotation = box.annotation && box.annotation.trim();
+    
+    html += `
+    <div class="kit-card${idx === 0 ? ' primary-card' : ''}">
+      <div class="kit-header">
+        <div class="kit-name">${box.name}</div>
+        <div class="kit-sku">${box.sku}</div>
+        <span class="kit-species-badge">${box.species_zh || box.species}</span>
+        ${annotation ? `<span class="annotation-badge">⚠ ${annotation}</span>` : ''}
+      </div>
+      <div class="factors-section">
+        <div class="factors-title">覆盖因子（匹配高亮）</div>
+        <div class="factor-tags">
+          ${(box.factors || []).map(f => {
+            const isMatch = matched.includes(f.toLowerCase());
+            return `<span class="factor-tag${isMatch ? ' matched' : ''}">${f}</span>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  });
+  
+  if (uncovered.length) {
+    html += `
+    <div class="uncovered-section">
+      <div class="uncovered-title">⚠ 未被覆盖的因子（${uncovered.length} 个）</div>
+      <div class="factor-tags">
+        ${uncovered.map(f => `<span class="factor-tag unmatched">${f}</span>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;">
+        以上因子在当前种属的 Milliplex 数据库中暂无匹配，建议核查因子名称或别名。
+      </div>
+    </div>`;
+  }
+  
+  resultsEl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('factorInput').addEventListener('input', function() {
+  const val = this.value;
+  if (state.debounceTimer) clearTimeout(state.debounceTimer);
+  if (!val.trim()) {
+    document.getElementById('results').innerHTML = '';
+    setStatus('idle','等待输入因子…');
+    return;
+  }
+  setStatus('active','正在解析…');
+  state.debounceTimer = setTimeout(() => {
+    state.factors = parseFactors(val);
+    performSearch(state.factors);
+  }, 320);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+renderSpecies();
+</script>
+</body>
+</html>
